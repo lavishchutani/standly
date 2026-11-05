@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Standly</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Standly">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="css/core.css">
+<link rel="stylesheet" href="css/widgets.css">
+</head>
+<body>
+<div id="app">
+  <main class="grid-stack" id="grid" aria-label="Your dashboard"></main>
+</div>
+<template id="tpl-clock">
+  <div class="widget widget-clock">
+    <button class="clock-options" type="button" aria-label="Clock appearance">&#8942;</button>
+    <div class="clock-city"><span class="clock-weekday"></span><i></i><span>MUMBAI</span></div>
+    <div class="clock-time"></div>
+    <svg class="analog-face" viewBox="0 0 400 400" aria-hidden="true"><circle class="dial-outline" cx="200" cy="200" r="174"/><g class="dial-ticks"></g><text x="200" y="82" text-anchor="middle">12</text><text x="318" y="207" text-anchor="middle">3</text><text x="200" y="330" text-anchor="middle">6</text><text x="82" y="207" text-anchor="middle">9</text><line class="hour-hand" x1="200" y1="200" x2="200" y2="127"/><line class="minute-hand" x1="200" y1="204" x2="200" y2="82"/><line class="second-hand" x1="200" y1="218" x2="200" y2="53"/><circle class="dial-pin" cx="200" cy="200" r="7"/></svg>
+    <svg class="world-face" viewBox="0 0 800 400" aria-hidden="true"><defs><pattern id="map-dots" width="13" height="13" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2.2"/></pattern></defs><path d="M48 102 94 63l70-20 38 22 24 40-17 27-48 5-28 36-31 8-22 49-22-8-8-41-24-18 9-37-25-24zm204-31 43-23 44 17 23 30-19 25-31 9-18 34-27-13-19-42zm76 93 34-19 51 14 28 37-15 41-27 28-7 66-25 24-19-35 5-48-29-38-28-13-8-34zm115-138 70-27 83 14 44 33 83 12 28 38-29 28-64-9-41 25-47-5-28 23-46-7-34-32-37-11-25-38z" fill="url(#map-dots)"/><circle class="map-pin" cx="525" cy="227" r="8"/><circle class="map-pin-halo" cx="525" cy="227" r="18"/></svg>
+    <div class="clock-date"></div>
+    <div class="face-indicator" aria-label="Clock face"><button data-face="blue" aria-label="Blue digital face"></button><button data-face="rose" aria-label="Rose digital face"></button><button data-face="analog" aria-label="Analog face"></button><button data-face="world" aria-label="World face"></button></div>
+  </div>
+</template>
+<dialog id="clock-sheet" class="clock-sheet">
+  <form method="dialog"><div class="sheet-grab"></div>
+    <div class="sheet-heading"><div><span class="eyebrow">PERSONALIZE</span><h2>Clock</h2></div><button class="sheet-close" aria-label="Close">&#215;</button></div>
+    <p class="sheet-label">CLOCK FACE</p>
+    <div class="clock-styles" role="group" aria-label="Digital clock style">
+      <button type="button" data-style="blue"><span class="style-preview">16:41</span><span>Digital</span></button>
+      <button type="button" data-style="rose"><span class="style-preview">16:41</span><span>Bloom</span></button>
+      <button type="button" data-style="analog"><span class="style-preview analog-preview">◷</span><span>Analog</span></button>
+      <button type="button" data-style="world"><span class="style-preview world-preview">●</span><span>World</span></button>
+    </div>
+    <p class="sheet-label">COLOR</p>
+    <div class="clock-colors" role="group" aria-label="Clock color">
+      <button type="button" data-color="amber" aria-label="Amber"></button><button type="button" data-color="ivory" aria-label="Ivory"></button><button type="button" data-color="coral" aria-label="Coral"></button><button type="button" data-color="mint" aria-label="Mint"></button><button type="button" data-color="blue" aria-label="Blue"></button>
+    </div>
+    <button class="night-toggle" type="button" id="night-mode-toggle" aria-pressed="false"><span><b>Night mode</b><small>Dim red tones for low light</small></span><i></i></button>
+  </form>
+</dialog>
+<template id="tpl-music">
+  <div class="widget widget-music">
+    <input type="file" id="music-file-input" accept="audio/*" multiple hidden>
+    <div class="music-heading"><span class="widget-kicker">LISTENING</span><span class="music-live"><i></i> LOCAL</span></div>
+    <div class="music-art" id="music-art"><span>&#9835;</span></div>
+    <div class="music-meta"><div class="music-title" id="music-title">No track loaded</div><div class="music-artist" id="music-artist">Tap + to add songs</div></div>
+    <div class="music-controls">
+      <button id="music-prev" aria-label="Previous">&#9198;</button><button id="music-play" aria-label="Play">&#9654;</button><button id="music-next" aria-label="Next">&#9197;</button><button id="music-add" aria-label="Add songs">+</button>
+    </div><audio id="music-audio"></audio>
+  </div>
+</template>
+<template id="tpl-notes">
+  <div class="widget widget-notes">
+    <div class="notes-header"><div><span class="widget-kicker">TODAY</span><strong>Focus list</strong></div><button id="notes-add" aria-label="Add item">+</button></div>
+    <ul class="notes-list" id="notes-list"></ul>
+  </div>
+</template>
+<script src="js/storage.js"></script><script src="js/widgets/clock.js"></script><script src="js/widgets/music.js"></script><script src="js/widgets/notes.js"></script><script src="js/core.js"></script>
+</body></html>
