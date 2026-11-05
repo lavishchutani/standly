@@ -49,87 +49,138 @@ const MusicDB = {
 };
 
 const MusicWidget = {
-  id: "music",
-  template: "tpl-music",
-
+  id: "music", template: "tpl-music",
   async init(el) {
-    const audio = el.querySelector("#music-audio");
-    const titleEl = el.querySelector("#music-title");
-    const artistEl = el.querySelector("#music-artist");
-    const playBtn = el.querySelector("#music-play");
-    const fileInput = el.querySelector("#music-file-input");
-
-    let tracks = [];
-    try { tracks = await MusicDB.getAll(); } catch { artistEl.textContent = "Storage unavailable · files play this session"; }
-    let objectURL;
-    const play = () => audio.play().catch(() => { artistEl.textContent = "Unable to play. Try another audio file."; artistEl.classList.add("music-error"); });
-    let index = 0;
-
-    const loadTrack = (i, autoplay) => {
+    const audio = el.querySelector('#music-audio');
+    const input = el.querySelector('#music-file-input');
+    const dialog = el.querySelector('.music-sheet');
+    const seek = el.querySelector('#music-seek');
+    const art = el.querySelector('#music-art');
+    const queue = el.querySelector('.music-queue');
+    let tracks = [], index = 0, objectURL, coverURL, generation = 0, importing = false;
+    const text = (selector, value) => el.querySelector(selector).textContent = value;
+    const time = value => { const s = Math.max(0, Math.floor(value || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+    const message = value => { text('#music-artist', value); text('.player-artist', value); };
+    const setCover = (picture) => {
+      if (coverURL) URL.revokeObjectURL(coverURL);
+      coverURL = null;
+      if (picture && /^(image\/)?(jpeg|jpg|png|webp)$/i.test(picture.format) && picture.data?.length <= 8 * 1024 * 1024) {
+        const type = picture.format.startsWith('image/') ? picture.format : `image/${picture.format}`;
+        coverURL = URL.createObjectURL(new Blob([new Uint8Array(picture.data)], { type }));
+      }
+      el.classList.toggle('has-cover', !!coverURL);
+      el.querySelectorAll('.cover-image').forEach(img => {
+        img.hidden = !coverURL;
+        if (coverURL) img.src = coverURL; else img.removeAttribute('src');
+        img.onerror = () => { img.hidden = true; el.classList.remove('has-cover'); };
+      });
+    };
+    const renderQueue = () => {
+      queue.replaceChildren();
+      tracks.forEach((track, i) => {
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = `${String(i + 1).padStart(2, '0')}   ${track.title || track.name}`;
+        if (i === index) button.setAttribute('aria-current', 'true');
+        button.onclick = () => loadTrack(i, true);
+        li.append(button); queue.append(li);
+      });
+      el.querySelectorAll('#music-prev, #music-next, [data-action=previous], [data-action=next]').forEach(b => b.disabled = !tracks.length);
+    };
+    const publishMetadata = track => {
+      if (!('mediaSession' in navigator) || !('MediaMetadata' in window)) return;
+      navigator.mediaSession.metadata = new MediaMetadata({ title: track.title || track.name, artist: track.artist || 'Local audio', album: track.album || '', artwork: coverURL ? [{ src: coverURL }] : [] });
+    };
+    const updateProgress = () => {
+      const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+      seek.disabled = duration <= 0;
+      seek.max = duration || 100;
+      seek.value = audio.currentTime || 0;
+      text('.elapsed', time(audio.currentTime)); text('.duration', time(duration));
+      seek.setAttribute('aria-valuetext', `${time(audio.currentTime)} of ${time(duration)}`);
+      if (duration && navigator.mediaSession?.setPositionState) {
+        try { navigator.mediaSession.setPositionState({ duration, playbackRate: audio.playbackRate, position: Math.min(audio.currentTime, duration) }); } catch {}
+      }
+    };
+    const play = () => audio.play().catch(() => message('Unable to play. Try another audio file.'));
+    const updatePlay = () => {
+      const paused = audio.paused;
+      el.classList.toggle('is-playing', !paused);
+      const icon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paused ? 'M6 3v18l15-9Z' : 'M5 4h5v16H5zM14 4h5v16h-5z'}"/></svg>`;
+      el.querySelectorAll('#music-play, [data-action=play]').forEach(b => { b.innerHTML = icon; b.setAttribute('aria-label', !tracks.length ? 'Add songs to play' : paused ? 'Play' : 'Pause'); });
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = paused ? 'paused' : 'playing';
+    };
+    const loadTrack = (i, autoplay = false) => {
       if (!tracks.length) return;
-      index = ((i % tracks.length) + tracks.length) % tracks.length;
+      const request = ++generation;
+      audio.pause();
+      index = (i + tracks.length) % tracks.length;
       const track = tracks[index];
       if (objectURL) URL.revokeObjectURL(objectURL);
       objectURL = URL.createObjectURL(track.blob);
       audio.src = objectURL;
-      artistEl.classList.remove("music-error");
-      titleEl.textContent = track.name;
-      artistEl.textContent = "Local file";
-
-      // Publish metadata so iOS shows it on the Lock Screen / Control Center
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: track.name,
-          artist: "Standly"
-        });
+      setCover(null);
+      const showDetails = () => {
+        text('#music-title', track.title || track.name); text('.player-title', track.title || track.name);
+        message(audio.error ? 'Unsupported audio. Choose another file.' : track.artist || 'Local audio'); text('.player-album', track.album || '');
+        renderQueue(); publishMetadata(track);
+      };
+      showDetails(); updateProgress(); updatePlay();
+      // Read tags from the existing file; metadata and artwork need no separate store.
+      if (window.jsmediatags) {
+        try { window.jsmediatags.read(track.blob, { onSuccess: ({ tags }) => {
+          if (request !== generation) return;
+          for (const key of ['title', 'artist', 'album']) if (typeof tags[key] === 'string') track[key] = tags[key].slice(0, 500);
+          setCover(tags.picture); showDetails();
+        }, onError: () => {} }); } catch { /* Untagged files keep their filenames and original artwork. */ }
       }
       if (autoplay) play();
     };
-
-    const updatePlayIcon = () => {
-      playBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${audio.paused ? "M6 3v18l15-9Z" : "M5 4h5v16H5zM14 4h5v16h-5z"}"/></svg>`;
-      playBtn.setAttribute("aria-label", audio.paused ? "Play" : "Pause");
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
-      }
-    };
-
-    el.querySelector("#music-add").addEventListener("click", () => fileInput.click());
-
-    fileInput.addEventListener("change", async (e) => {
-      for (const file of e.target.files) {
-        let track;
-        try { track = await MusicDB.addFile(file); } catch {
-          track = { id: crypto.randomUUID(), name: file.name, blob: file };
-          document.getElementById("app-status").textContent = "Storage full or unavailable · new music lasts this session";
+    const toggle = () => { if (!tracks.length) input.click(); else audio.paused ? play() : audio.pause(); };
+    const previous = () => { if (audio.currentTime > 3) audio.currentTime = 0; else loadTrack(index - 1, true); };
+    const next = () => loadTrack(index + 1, true);
+    const ready = MusicDB.getAll().then(saved => { tracks = saved; if (tracks.length) loadTrack(0); renderQueue(); updatePlay(); }).catch(() => { message('Storage unavailable · files play this session'); });
+    el.querySelector('#music-add').onclick = () => input.click();
+    el.querySelector('#music-play').onclick = toggle;
+    el.querySelector('#music-prev').onclick = previous;
+    el.querySelector('#music-next').onclick = next;
+    art.onclick = () => dialog.showModal();
+    el.querySelector('.music-meta').onclick = () => dialog.showModal();
+    dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+    const actions = { play: toggle, previous, next, add: () => input.click() };
+    dialog.querySelectorAll('[data-action]').forEach(b => b.onclick = actions[b.dataset.action]);
+    // Reuse the familiar transport symbols in both player sizes.
+    dialog.querySelector('[data-action=previous]').innerHTML = el.querySelector('#music-prev').innerHTML;
+    dialog.querySelector('[data-action=next]').innerHTML = el.querySelector('#music-next').innerHTML;
+    input.addEventListener('change', async () => {
+      if (importing) return;
+      const files = [...input.files];
+      if (!files.length) return;
+      importing = true;
+      await ready;
+      const wasEmpty = !tracks.length;
+      message('Adding songs…');
+      try {
+        for (const file of files) {
+          let track;
+          try { track = await MusicDB.addFile(file); }
+          catch { track = { id: crypto.randomUUID(), name: file.name.replace(/\.[^/.]+$/, ''), blob: file }; text('#music-artist', 'Files available this session'); document.getElementById('app-status').textContent = 'Storage unavailable · new music lasts this session'; }
+          tracks.push(track);
         }
-        tracks.push(track);
-      }
-      if (tracks.length === e.target.files.length) loadTrack(0, false);
-      fileInput.value = "";
+        if (wasEmpty) loadTrack(0); else message(tracks[index].artist || 'Local audio');
+        renderQueue(); updatePlay();
+      } finally { importing = false; input.value = ''; }
     });
-
-    playBtn.addEventListener("click", () => {
-      if (!tracks.length) return fileInput.click();
-      audio.paused ? play() : audio.pause();
-    });
-
-    el.querySelector("#music-next").addEventListener("click", () => loadTrack(index + 1, true));
-    el.querySelector("#music-prev").addEventListener("click", () => loadTrack(index - 1, true));
-
-    audio.addEventListener("play", updatePlayIcon);
-    audio.addEventListener("pause", updatePlayIcon);
-    audio.addEventListener("error", () => { artistEl.textContent = "Unsupported audio. Try another file."; artistEl.classList.add("music-error"); });
-    audio.addEventListener("ended", () => loadTrack(index + 1, true));
-
-    // Lock-screen / Control Center buttons call back into the same logic
-    if ("mediaSession" in navigator) {
-      try { navigator.mediaSession.setActionHandler("play", () => play()); } catch {}
-      try { navigator.mediaSession.setActionHandler("pause", () => audio.pause()); } catch {}
-      try { navigator.mediaSession.setActionHandler("previoustrack", () => loadTrack(index - 1, true)); } catch {}
-      try { navigator.mediaSession.setActionHandler("nexttrack", () => loadTrack(index + 1, true)); } catch {}
+    seek.oninput = () => { if (Number.isFinite(audio.duration)) { audio.currentTime = Number(seek.value); updateProgress(); } };
+    ['timeupdate', 'loadedmetadata', 'durationchange', 'emptied'].forEach(event => audio.addEventListener(event, updateProgress));
+    ['play', 'pause', 'ended'].forEach(event => audio.addEventListener(event, updatePlay));
+    audio.addEventListener('ended', next);
+    audio.addEventListener('error', () => { message('Unsupported audio. Choose another file.'); seek.disabled = true; });
+    if ('mediaSession' in navigator) {
+      const handlers = { play: () => tracks.length && play(), pause: () => audio.pause(), previoustrack: previous, nexttrack: next, seekto: detail => { if (Number.isFinite(audio.duration)) audio.currentTime = Math.min(audio.duration, Math.max(0, detail.seekTime)); } };
+      for (const [name, handler] of Object.entries(handlers)) { try { navigator.mediaSession.setActionHandler(name, handler); } catch {} }
     }
-
-    if (tracks.length) loadTrack(0, false);
+    renderQueue(); updatePlay();
   }
 };

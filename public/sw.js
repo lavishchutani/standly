@@ -1,5 +1,5 @@
-const CACHE_NAME = 'standly-shell-v7';
-const SHELL_FILES = ['./', './index.html', './manifest.json', './css/core.css', './css/widgets.css', './js/core.js', './js/storage.js', './js/widgets/clock.js', './js/widgets/music.js', './js/widgets/notes.js', './icons/icon-180.png', './icons/icon-512.png'];
+const CACHE_NAME = 'standly-shell-v11';
+const SHELL_FILES = ['./', './index.html', './manifest.json', './css/core.css', './css/widgets.css', './js/core.js', './js/storage.js', './js/world-data.js', './js/widgets/clock.js', './js/vendor/jsmediatags.min.js', './js/widgets/music.js', './js/widgets/notes.js', './icons/icon-180.png', './icons/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_FILES)));
   // Activate on the next app launch, keeping open pages on one coherent version.
