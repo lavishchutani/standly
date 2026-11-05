@@ -17,7 +17,8 @@ const Storage = {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
-      console.warn("Storage.set failed for", key, e);
+      const status = document.getElementById("app-status");
+      if (status) status.textContent = "Storage unavailable · changes may not survive closing";
     }
   }
 };

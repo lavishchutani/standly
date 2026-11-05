@@ -9,7 +9,7 @@ const ClockWidget = {
     const weekdayEl = el.querySelector(".clock-weekday");
     const dialog = document.getElementById("clock-sheet");
     const faceNames = ["blue", "rose", "analog", "world"];
-    const saved = Storage.get("clockAppearance", { style: "blue", color: "blue" });
+    const saved = Storage.get("clockAppearance", null) || { style: "blue", color: "blue" };
 
     const apply = ({ style, color }) => {
       const face = faceNames.includes(style) ? style : "blue";
@@ -26,7 +26,8 @@ const ClockWidget = {
       const now = new Date();
       timeEl.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
       weekdayEl.textContent = now.toLocaleDateString([], { weekday: "long" }).toUpperCase();
-      dateEl.textContent = now.toLocaleDateString([], { month: "long", day: "numeric" });
+      dateEl.textContent = el.dataset.style === "world" ? "Illustrative map · device time" : now.toLocaleDateString([], { month: "long", day: "numeric" });
+      el.setAttribute("aria-label", `Clock, ${timeEl.textContent}`);
       const minute = now.getMinutes() + now.getSeconds() / 60;
       const hour = (now.getHours() % 12) + minute / 60;
       el.querySelector(".hour-hand").setAttribute("transform", `rotate(${hour * 30} 200 200)`);
@@ -49,6 +50,7 @@ const ClockWidget = {
     const setNightMode = (enabled) => {
       document.getElementById("app").classList.toggle("night-mode", enabled);
       dialog.querySelector("#night-mode-toggle").setAttribute("aria-pressed", String(enabled));
+      document.getElementById("quick-night").setAttribute("aria-pressed", String(enabled));
       Storage.set("nightMode", enabled);
     };
     setNightMode(Storage.get("nightMode", false));
@@ -59,20 +61,23 @@ const ClockWidget = {
       const appearance = { style, color: el.dataset.color };
       apply(appearance);
       Storage.set("clockAppearance", appearance);
+      render();
     };
-    el.querySelector(".clock-options").addEventListener("click", () => dialog.showModal());
+    document.querySelector(".clock-options").addEventListener("click", () => dialog.showModal());
     el.querySelectorAll("[data-face]").forEach((button) => button.addEventListener("click", () => selectFace(button.dataset.face)));
     dialog.querySelectorAll("[data-style]").forEach((button) => button.addEventListener("click", () => selectFace(button.dataset.style)));
     dialog.querySelectorAll("[data-color]").forEach((button) => button.addEventListener("click", () => {
       const appearance = { style: el.dataset.style, color: button.dataset.color };
       apply(appearance); Storage.set("clockAppearance", appearance);
     }));
+    document.getElementById("quick-night").addEventListener("click", (event) => setNightMode(event.currentTarget.getAttribute("aria-pressed") !== "true"));
     dialog.querySelector("#night-mode-toggle").addEventListener("click", (event) => {
       setNightMode(event.currentTarget.getAttribute("aria-pressed") !== "true");
     });
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
 
     let startX = null;
+    el.addEventListener("pointercancel", () => { startX = null; });
     el.addEventListener("pointerdown", (event) => { if (!event.target.closest("button")) startX = event.clientX; });
     el.addEventListener("pointerup", (event) => {
       if (startX === null || dialog.open) return;
