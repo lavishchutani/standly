@@ -1,72 +1,59 @@
-# Standly — v1
+# Standly
 
-A StandBy-inspired personal dashboard: clock, local music player (own files,
-Media Session lock-screen controls), and a to-do list. No build step —
-just HTML/CSS/JS, runs on any machine with a code editor and a browser. The
-visual direction uses a low-light charcoal canvas, warm amber clock, and
-subtle tactile panels designed for an iPhone home-screen install.
+Standly is an iPhone-focused, StandBy-inspired dashboard built as a Progressive Web App (PWA). It brings a large clock face and a small set of personal widgets into a calm, glanceable screen. The app is designed for portrait use and a two-column StandBy layout in landscape.
 
-## What's here
+## What is implemented
 
+- **Four clock faces:** oversized blue digital, rose digital with a soft atmospheric background, an animated analog dial, and a dotted world-map face.
+- **Clock controls:** swipe horizontally across the clock to change faces, or open the clock options to select a face and color. Choices are saved locally.
+- **Night mode:** an optional red-tinted display for low light, with its setting saved on the device.
+- **Focus list:** add, complete, and remove local reminders.
+- **Music player:** add personal audio files, play and skip tracks, and expose playback controls through the browser's Media Session API where supported. Audio files are stored in IndexedDB.
+- **Offline app shell:** a service worker caches the HTML, CSS, and JavaScript needed to reopen the dashboard without a network connection.
+- **Responsive layout:** landscape places the clock beside music and reminders; portrait places the clock above the widgets. Safe-area insets support iPhone displays.
+
+## How it is built
+
+Standly uses plain HTML, CSS, and JavaScript with no build step or runtime framework. The layout and clock artwork are drawn with CSS and inline SVG, so the dashboard does not need a remote component library or downloaded font to render. The system font stack lets iOS use its own interface font.
+
+Widget code is kept in small modules under `js/widgets/`. `js/core.js` mounts those widgets into the responsive layout, `js/storage.js` wraps local storage, and `css/` contains the shared layout and widget styles. The clock's analog hands and digital time update from the device's local time. The world face currently uses a decorative dotted map and a Mumbai label; it is not a live world clock or geographic map.
+
+The `references/` folder contains iPhone screenshots used to guide the visual direction. They are design references and are not loaded by the app.
+
+## Run locally
+
+From this folder, start a static server:
+
+```powershell
+python -m http.server 4173
 ```
-index.html        Shell: grid container + widget HTML templates
-manifest.json      PWA install config (name, icon, display mode)
-sw.js              Service worker: offline caching + push notification hook
-css/core.css       Design tokens, StandBy-style glass tiles, safe-area handling
-css/widgets.css    Per-widget styling
-js/core.js         Grid init, widget registry, edit-mode toggle, wake lock
-js/storage.js      localStorage wrapper
-js/widgets/        One file per widget (clock.js, music.js, notes.js)
-icons/             Placeholder app icons (replace with your own anytime)
+
+Open [http://localhost:4173](http://localhost:4173) on the same computer. The service worker requires HTTP or HTTPS; opening `index.html` directly as a `file://` URL will not enable offline caching.
+
+## Install on iPhone
+
+To add Standly to an iPhone Home Screen, host the folder at an HTTPS URL, open it in Safari, tap **Share**, then choose **Add to Home Screen**. Localhost on the computer is not reachable from the phone; a network-hosted HTTPS deployment is needed for installation and service-worker support.
+
+## Current limits
+
+- As a web app, Standly cannot mirror system notifications, provide WidgetKit widgets, or launch itself automatically when the phone is placed on a stand.
+- The music player plays files selected by the user. It cannot control Apple Music's protected library or other apps' system audio.
+- The World face is currently illustrative; it does not fetch live city times or map data.
+- The layout adapts to orientation, but iOS controls orientation and does not expose a reliable web-app orientation lock.
+
+## Project structure
+
+```text
+index.html             App shell, clock settings, and widget templates
+manifest.json          PWA name, icons, and display settings
+sw.js                  Offline app-shell cache
+css/core.css           Page layout, safe areas, modal, and shared styling
+css/widgets.css        Clock, music, and focus-list appearance
+js/core.js             Widget mounting and app startup
+js/storage.js          Local-storage helper
+js/widgets/clock.js    Clock faces, settings, and saved preferences
+js/widgets/music.js    Local audio player and Media Session controls
+js/widgets/notes.js    Focus-list interactions
+icons/                 PWA icons
+references/            User-provided visual references
 ```
-
-## Test on your computer first
-
-From this folder, run a local server (needed because service workers
-require `http://` not `file://`):
-
-```
-python3 -m http.server 8000
-```
-
-Then open `http://localhost:8000` in a browser. Try the edit button
-(bottom-right ⠿) to drag/resize tiles, add a to-do, and add a song via
-the music widget's `+`.
-
-## Install it on your iPhone
-
-iOS Safari requires **HTTPS** (not plain HTTP) to install a PWA with a
-working service worker — `http://localhost` only counts as secure on the
-same machine, not from your phone over Wi-Fi. Free HTTPS hosting options:
-
-- **GitHub Pages** — push this folder to a GitHub repo, enable Pages in
-  repo settings, you get a free `https://yourname.github.io/...` URL.
-- **Netlify** or **Vercel** — drag-and-drop deploy, also free, also HTTPS.
-
-Once it's live on an HTTPS URL:
-1. Open that URL in Safari on your iPhone.
-2. Tap the Share button → **Add to Home Screen**.
-3. Open it from the home screen icon — it launches full-screen, no Safari
-   address bar.
-
-## Known limitations (by design, not bugs)
-
-- **Music widget only plays files you add yourself** — it cannot read or
-  control Apple Music's downloaded (DRM-protected) tracks. That needs a
-  native app using `MPMusicPlayerController`, which is the planned next
-  phase once you have Mac/Xcode access.
-- **No true system notification mirroring** — the to-do/notes widget is
-  local-only for now; wiring real push notifications needs a small backend
-  to send pushes (out of scope for v1, the service worker is ready for it).
-- **Orientation isn't lockable** — iOS doesn't support the manifest's
-  `orientation` field, so the layout is just built to look right in both.
-
-## Next steps / ideas for v2
-
-- ID3 tag reading for real song/artist/artwork instead of filename only
-- Weather widget
-- Real push notifications (needs a small backend — e.g. a free
-  Cloudflare Worker or Netlify Function to send the push)
-- Eventually: port widget-by-widget into SwiftUI once you have Xcode
-  access, starting with the clock (simplest) and music (biggest payoff,
-  since native unlocks real Apple Music remote control)
