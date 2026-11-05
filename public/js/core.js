@@ -16,19 +16,6 @@ function buildGrid() {
   return grid;
 }
 
-function setupEditToggle(grid) {
-  const btn = document.getElementById("edit-toggle");
-  if (!btn) return;
-  let editing = false;
-  btn.addEventListener("click", () => {
-    editing = !editing;
-    grid.classList.toggle("is-editing", editing);
-    btn.textContent = editing ? "Done" : "Edit layout";
-    btn.setAttribute("aria-label", editing ? "Finish editing layout" : "Edit layout");
-    btn.style.color = editing ? "var(--accent)" : "var(--text)";
-  });
-}
-
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch((error) => console.warn("Service worker registration failed", error));
 }
@@ -41,8 +28,7 @@ function keepScreenAwake() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const grid = buildGrid();
-  setupEditToggle(grid);
+  buildGrid();
   registerServiceWorker();
   keepScreenAwake();
 });

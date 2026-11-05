@@ -1,0 +1,14 @@
+.netlify/
+node_modules/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.log
+.env
+.env.*
+!.env.example
+coverage/
+test-results/
+playwright-report/

@@ -1,59 +1,54 @@
 # Standly
 
-Standly is an iPhone-focused, StandBy-inspired dashboard built as a Progressive Web App (PWA). It brings a large clock face and a small set of personal widgets into a calm, glanceable screen. The app is designed for portrait use and a two-column StandBy layout in landscape.
+An iPhone-focused, StandBy-inspired clock and personal dashboard. Original CSS and SVG artwork, the iOS system font stack, and a quiet black canvas keep the time in focus.
 
-## What is implemented
+## Stack and deployment
 
-- **Four clock faces:** oversized blue digital, rose digital with a soft atmospheric background, an animated analog dial, and a dotted world-map face.
-- **Clock controls:** swipe horizontally across the clock to change faces, or open the clock options to select a face and color. Choices are saved locally.
-- **Night mode:** an optional red-tinted display for low light, with its setting saved on the device.
-- **Focus list:** add, complete, and remove local reminders.
-- **Music player:** add personal audio files, play and skip tracks, and expose playback controls through the browser's Media Session API where supported. Audio files are stored in IndexedDB.
-- **Offline app shell:** a service worker caches the HTML, CSS, and JavaScript needed to reopen the dashboard without a network connection.
-- **Responsive layout:** landscape places the clock beside music and reminders; portrait places the clock above the widgets. Safe-area insets support iPhone displays.
+Plain HTML, CSS, and JavaScript; no runtime dependencies, package manifest, or build step. Three small widgets do not need a framework, routing, or a bundler. The empty, dependency-free lockfile was removed.
 
-## How it is built
+Netlify publishes **`public/`**, as configured in `netlify.toml`. The original six HEIC screenshots remain in `references/` for design review and are excluded from published files by that directory boundary. Nothing needs to be compiled. Connected repository changes use Netlify's normal deploy workflow.
 
-Standly uses plain HTML, CSS, and JavaScript with no build step or runtime framework. The layout and clock artwork are drawn with CSS and inline SVG, so the dashboard does not need a remote component library or downloaded font to render. The system font stack lets iOS use its own interface font.
+Run with Netlify CLI:
 
-Widget code is kept in small modules under `js/widgets/`. `js/core.js` mounts those widgets into the responsive layout, `js/storage.js` wraps local storage, and `css/` contains the shared layout and widget styles. The clock's analog hands and digital time update from the device's local time. The world face currently uses a decorative dotted map and a Mumbai label; it is not a live world clock or geographic map.
-
-The `references/` folder contains iPhone screenshots used to guide the visual direction. They are design references and are not loaded by the app.
-
-## Run locally
-
-From this folder, start a static server:
-
-```powershell
-python -m http.server 4173
+```sh
+netlify dev --port 8889
 ```
 
-Open [http://localhost:4173](http://localhost:4173) on the same computer. The service worker requires HTTP or HTTPS; opening `index.html` directly as a `file://` URL will not enable offline caching.
+Alternatively, for static-only development:
 
-## Install on iPhone
-
-To add Standly to an iPhone Home Screen, host the folder at an HTTPS URL, open it in Safari, tap **Share**, then choose **Add to Home Screen**. Localhost on the computer is not reachable from the phone; a network-hosted HTTPS deployment is needed for installation and service-worker support.
-
-## Current limits
-
-- As a web app, Standly cannot mirror system notifications, provide WidgetKit widgets, or launch itself automatically when the phone is placed on a stand.
-- The music player plays files selected by the user. It cannot control Apple Music's protected library or other apps' system audio.
-- The World face is currently illustrative; it does not fetch live city times or map data.
-- The layout adapts to orientation, but iOS controls orientation and does not expose a reliable web-app orientation lock.
-
-## Project structure
-
-```text
-index.html             App shell, clock settings, and widget templates
-manifest.json          PWA name, icons, and display settings
-sw.js                  Offline app-shell cache
-css/core.css           Page layout, safe areas, modal, and shared styling
-css/widgets.css        Clock, music, and focus-list appearance
-js/core.js             Widget mounting and app startup
-js/storage.js          Local-storage helper
-js/widgets/clock.js    Clock faces, settings, and saved preferences
-js/widgets/music.js    Local audio player and Media Session controls
-js/widgets/notes.js    Focus-list interactions
-icons/                 PWA icons
-references/            User-provided visual references
+```sh
+python -m http.server 4173 --directory public
 ```
+
+Open the corresponding localhost URL. HTTPS or localhost is required for service workers. For manual deployment with an authenticated CLI, use `netlify deploy --dir public` for a preview or add `--prod` for production. No build command is needed.
+
+## Features
+
+- Four distinct faces: large blue Digital, pink Rose/Bloom, detailed Analog, and a dotted World illustration. All show device-local time in 24-hour format.
+- Swipe the clock, use the face dots, or open Appearance to switch faces. Accent colors change Digital, the Analog seconds hand, and the World label; Rose keeps its own gradient.
+- Manual night mode from the moon button or Appearance dims and warms the entire dashboard. Preferences retain their existing local storage keys.
+- Focus list with inline entry, completion, deletion, remaining count, keyboard support, and existing local persistence. Empty lists are intentionally empty, with no invented reminders.
+- User-selected audio files, play/pause, previous/next, automatic advance, and Media Session controls where supported. Existing IndexedDB music is preserved. Playback failures are visible, object URLs are released when tracks change, and storage failures allow temporary session playback with a warning.
+- Portrait stacks the clock above compact widgets; landscape pairs it with the widgets. Safe-area padding, 44px primary controls, zoom support, and reduced-motion behavior accommodate iPhone use.
+- Screen Wake Lock is requested when supported and while visible; the browser can deny or release it.
+
+## Offline and installation
+
+Visit once online to cache the app shell, including icons. On iPhone, open the HTTPS site in Safari, choose **Share → Add to Home Screen**, then launch Standly from that icon. The service worker caches only the app shell, removes only older Standly caches, and activates updates after existing app windows close. After an update, close all Standly windows and reopen to use the new shell. No push integration is installed.
+
+Settings and reminders retain their existing browser-local storage; music retains its existing IndexedDB store. Data is device- and origin-specific, does not sync, and can be removed by clearing website data or by browser storage eviction. Preview URLs have separate storage from production. Offline music works only for files successfully retained by the browser. No account or remote data storage was added.
+
+## Limits
+
+Standly cannot mirror iOS notifications, access Apple Music's protected library, provide WidgetKit widgets, or launch automatically on a stand. World is an original decorative map, not a live map, city-time service, or day/night visualization. Audio codecs, background playback, Media Session, Wake Lock, and installation behavior depend on the browser and iOS. Safari controls orientation. Physical iPhone testing remains necessary for audio interruption behavior, installation, notch insets, and lock-screen controls.
+
+## Structure
+
+- `public/index.html`: app shell and widget templates
+- `public/css/`: layout, settings, and widget styling
+- `public/js/widgets/`: clock, music, and focus interactions
+- `public/js/storage.js`: existing local preferences/list storage wrapper
+- `public/js/core.js`: mounting, service worker, and Wake Lock
+- `public/sw.js`, `public/manifest.json`, `public/icons/`: offline and installation assets
+- `references/`: original visual references, never published
+- `netlify.toml`: publish directory, local server, and response headers
