@@ -10,13 +10,21 @@ const NotesWidget = {
     const render = () => {
       list.replaceChildren();
       el.querySelector('.notes-empty').hidden = items.length > 0;
-      el.querySelector('.notes-count').textContent = items.filter(i => !i.done).length;
+      const remaining = items.filter(i => !i.done).length;
+      const completed = items.length - remaining;
+      el.querySelector('.notes-count').textContent = `${remaining} left`;
+      const percent = items.length ? Math.round(completed / items.length * 100) : 0;
+      const progress = el.querySelector('.focus-progress');
+      progress.setAttribute('aria-valuenow', percent);
+      progress.querySelector('span').style.width = `${percent}%`;
+      el.querySelector('.focus-status').textContent = !items.length ? 'A fresh start' : !remaining ? 'All done. Take a breath.' : `${completed} of ${items.length} complete`;
+      el.querySelector('.focus-clear').hidden = completed === 0;
       for (const item of items) {
         const li = document.createElement('li');
         li.className = item.done ? 'done' : '';
         const check = document.createElement('button');
         check.className = 'check';
-        check.setAttribute('aria-label', `Complete: ${item.text}`);
+        check.setAttribute('aria-label', `${item.done ? 'Mark incomplete' : 'Complete'}: ${item.text}`);
         check.setAttribute('aria-pressed', String(!!item.done));
         check.onclick = () => { item.done = !item.done; save(); list.querySelectorAll('.check')[items.indexOf(item)]?.focus(); };
         const label = document.createElement('span');
@@ -29,6 +37,7 @@ const NotesWidget = {
       }
     };
     const save = () => { Storage.set('notes.items', items); render(); };
+    el.querySelector('.focus-clear').onclick = () => { items = items.filter(i => !i.done); save(); add.focus(); };
     add.onclick = () => { entry.hidden = !entry.hidden; add.setAttribute('aria-expanded', String(!entry.hidden)); if (!entry.hidden) input.focus(); };
     entry.onsubmit = e => {
       e.preventDefault();

@@ -15,60 +15,96 @@
 </head>
 <body>
 <div id="app">
-  <header class="app-bar"><span class="app-name">Standly</span><div class="app-actions">
+  <header class="app-bar"><span class="app-name" aria-label="Standly"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="3.5"/><path d="M14 7h7M14 12h5M14 17h7"/></svg><span>standly<span class="brand-period">.</span></span></span><div class="app-actions">
     <button class="icon-button" id="quick-night" aria-label="Night mode" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
-    <button class="icon-button clock-options" aria-label="Clock appearance"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 17h14" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="3" fill="#000" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="17" r="3" fill="#000" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    <button class="icon-button clock-options" aria-label="Customize time"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 17h14" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="7" r="3" fill="#000" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="17" r="3" fill="#000" stroke="currentColor" stroke-width="1.5"/></svg></button>
   </div></header>
   <main class="grid-stack" id="grid" aria-label="Your dashboard"></main>
   <footer class="app-footer"><span></span><span id="app-status">Your time. Your space.</span></footer>
 </div>
 <template id="tpl-clock">
   <div class="widget widget-clock">
-    <div class="clock-city"><span class="clock-weekday"></span><i></i><span>LOCAL TIME</span></div>
-    <div class="clock-time"></div>
+    <div class="clock-city"><span class="clock-weekday"></span></div>
+    <div class="clock-time clock-digits"></div>
     <svg class="analog-face" viewBox="0 0 400 400" aria-hidden="true"><circle class="dial-outline" cx="200" cy="200" r="174"/><g class="dial-ticks"></g><text x="200" y="82" text-anchor="middle">12</text><text x="318" y="207" text-anchor="middle">3</text><text x="200" y="330" text-anchor="middle">6</text><text x="82" y="207" text-anchor="middle">9</text><line class="hour-hand" x1="200" y1="200" x2="200" y2="127"/><line class="minute-hand" x1="200" y1="204" x2="200" y2="82"/><line class="second-hand" x1="200" y1="218" x2="200" y2="53"/><circle class="dial-pin" cx="200" cy="200" r="7"/></svg>
-    <svg class="world-face" viewBox="0 0 800 400" aria-hidden="true"><defs><pattern id="map-dots" width="13" height="13" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2.2"/></pattern></defs><path d="M60 90 105 50 173 38 210 60 255 62 268 90 226 120 203 146 177 155 158 190 127 183 108 152 83 144Z M170 188 209 205 245 249 237 285 214 323 200 354 179 324 176 276 157 235Z M285 35 331 23 346 49 323 79 296 73Z M354 97 381 71 420 77 444 98 420 122 384 127Z M376 139 421 132 463 162 477 193 453 238 427 272 407 262 391 220 361 186Z M438 82 484 51 553 43 602 57 648 52 709 77 745 110 713 142 667 137 628 163 592 152 568 174 544 207 524 184 501 151 472 140Z M593 187 617 207 632 235 662 249 650 261 618 244 601 215Z M657 278 701 258 739 279 744 310 713 327 671 317Z M470 247 477 263 467 283 461 269Z M755 326 769 315 774 335 762 347Z" fill="url(#map-dots)"/></svg>
+    <div class="world-panel">
+      <div class="world-head">
+        <div class="world-place"><span class="world-kicker"><i></i><span class="world-source">Locating…</span></span><strong class="world-city">—</strong><span class="world-region"></span></div>
+        <button type="button" class="world-locate" aria-label="Use precise location" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 3.4 3.8 10.5c-.8.3-.7 1.4.1 1.6l6.4 1.6 1.6 6.4c.2.8 1.3.9 1.6.1l7.1-16.8Z"/></svg></button>
+      </div>
+      <svg class="world-map" viewBox="0 0 1200 470" role="img" aria-label="World map"><g class="map-dots"></g><g class="map-marker"><circle class="map-pulse" r="12"/><circle class="map-ring" r="18"/><circle class="map-core" r="9"/></g></svg>
+      <div class="world-foot">
+        <div class="world-now"><div class="world-time clock-digits"></div><div class="world-meta"></div></div>
+        <ul class="world-cities" aria-label="Other cities"></ul>
+      </div>
+    </div>
     <div class="clock-date"></div>
     <div class="face-indicator" aria-label="Clock face"><button data-face="blue" aria-label="Blue digital face"></button><button data-face="rose" aria-label="Rose digital face"></button><button data-face="analog" aria-label="Analog face"></button><button data-face="world" aria-label="World face"></button></div>
   </div>
 </template>
-<dialog id="clock-sheet" class="clock-sheet">
+<dialog id="clock-sheet" class="clock-sheet" aria-labelledby="clock-sheet-title">
   <form method="dialog"><div class="sheet-grab"></div>
-    <div class="sheet-heading"><div><span class="eyebrow">PERSONALIZE</span><h2>Clock</h2></div><button class="sheet-close" aria-label="Close">&#215;</button></div>
-    <p class="sheet-label">CLOCK FACE</p>
-    <div class="clock-styles" role="group" aria-label="Clock face">
-      <button type="button" data-style="blue"><span class="style-preview">16:41</span><span>Digital</span></button>
-      <button type="button" data-style="rose"><span class="style-preview">16:41</span><span>Bloom</span></button>
-      <button type="button" data-style="analog"><span class="style-preview analog-preview">◷</span><span>Analog</span></button>
-      <button type="button" data-style="world"><span class="style-preview world-preview">●</span><span>World</span></button>
+    <div class="sheet-heading"><div><span class="eyebrow">CUSTOMIZE</span><h2 id="clock-sheet-title">Time &amp; Type</h2></div><button class="sheet-close" aria-label="Close">&#215;</button></div>
+    <div class="sheet-preview" aria-hidden="true"><div class="preview-time clock-digits"></div><div class="preview-date"></div></div>
+    <p class="sheet-label">TYPEFACE</p>
+    <div class="font-grid" role="group" aria-label="Typeface" data-opt="font"><button type="button" data-val="classic"><span class="font-sample" data-font="classic">12</span><span>Classic</span></button><button type="button" data-val="rounded"><span class="font-sample" data-font="rounded">12</span><span>Rounded</span></button><button type="button" data-val="serif"><span class="font-sample" data-font="serif">12</span><span>Serif</span></button><button type="button" data-val="mono"><span class="font-sample" data-font="mono">12</span><span>Mono</span></button><button type="button" data-val="condensed"><span class="font-sample" data-font="condensed">12</span><span>Narrow</span></button></div>
+    <p class="sheet-label">WEIGHT</p>
+    <div class="seg" role="group" data-opt="weight"><button type="button" data-val="light">Light</button><button type="button" data-val="regular">Regular</button><button type="button" data-val="bold">Bold</button><button type="button" data-val="heavy">Heavy</button></div>
+    <p class="sheet-label">SIZE</p>
+    <div class="seg" role="group" data-opt="size"><button type="button" data-val="s">Compact</button><button type="button" data-val="m">Standard</button><button type="button" data-val="l">Large</button></div>
+    <p class="sheet-label">TIME FORMAT</p>
+    <div class="sheet-group">
+      <div class="group-row"><span><b>Hour cycle</b></span><div class="seg" role="group" data-opt="hour"><button type="button" data-val="12">12-hour</button><button type="button" data-val="24">24-hour</button></div></div>
+      <button type="button" class="row-toggle" data-opt="seconds" aria-pressed="false"><span><b>Show seconds</b><small>A ticking seconds counter</small></span><i></i></button>
+      <button type="button" class="row-toggle" data-opt="leadingZero" aria-pressed="false"><span><b>Leading zero</b><small>09:05 instead of 9:05</small></span><i></i></button>
+      <button type="button" class="row-toggle" data-opt="ampm" aria-pressed="false"><span><b>AM / PM label</b><small>Available with 12-hour time</small></span><i></i></button>
     </div>
-    <p class="sheet-label">ACCENT · DIGITAL &amp; ANALOG</p>
-    <div class="clock-colors" role="group" aria-label="Clock color">
+    <p class="sheet-label">DATE</p>
+    <div class="seg" role="group" data-opt="date"><button type="button" data-val="long">Full</button><button type="button" data-val="short">Short</button><button type="button" data-val="numeric">Numeric</button><button type="button" data-val="off">Hidden</button></div>
+    <p class="sheet-label">ACCENT</p>
+    <div class="clock-colors" role="group" aria-label="Accent color">
       <button type="button" data-color="amber" aria-label="Amber"></button><button type="button" data-color="ivory" aria-label="Ivory"></button><button type="button" data-color="coral" aria-label="Coral"></button><button type="button" data-color="mint" aria-label="Mint"></button><button type="button" data-color="blue" aria-label="Blue"></button>
     </div>
-    <button class="night-toggle" type="button" id="night-mode-toggle" aria-pressed="false"><span><b>Night mode</b><small>Dim red tones for low light</small></span><i></i></button>
-    <p class="sheet-note">Swipe the clock to change faces. World is an illustrative map showing your device’s local time.<br>On iPhone: Share → Add to Home Screen.</p>
+    <p class="sheet-label">WORLD</p>
+    <div class="sheet-group">
+      <button type="button" class="row-toggle" data-opt="precise" aria-pressed="false"><span><b>Precise location</b><small>Use GPS for the pin; time follows your device’s zone</small></span><i></i></button>
+      <button type="button" class="row-toggle" data-opt="cities" aria-pressed="false"><span><b>Reference cities</b><small>Three world times beside yours</small></span><i></i></button>
+    </div>
+    <div class="sheet-group night-group">
+      <button class="row-toggle night-toggle" type="button" id="night-mode-toggle" aria-pressed="false"><span><b>Night mode</b><small>Dim red tones for low light</small></span><i></i></button>
+    </div>
+    <p class="sheet-note">Swipe the clock to change faces. World estimates your city from your network connection. GPS pins your position using your device’s time zone. The coral pin marks the displayed location.<br>On iPhone: Share → Add to Home Screen.</p>
   </form>
 </dialog>
 <template id="tpl-music">
   <div class="widget widget-music">
     <input type="file" id="music-file-input" accept="audio/*" multiple hidden>
     <div class="music-heading"><span class="widget-kicker">LISTENING</span><span class="music-live"><i></i> LOCAL</span></div>
-    <div class="music-art" id="music-art" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4v12a3 3 0 1 0 2 2V8l8-2v8a3 3 0 1 0 2 2V1Z"/></svg></div>
-    <div class="music-meta"><div class="music-title" id="music-title">Your soundtrack</div><div class="music-artist" id="music-artist">Add audio from your files</div></div>
+    <button class="music-art" id="music-art" aria-label="Open player and queue"><svg viewBox="0 0 24 24"><path d="M9 4v12a3 3 0 1 0 2 2V8l8-2v8a3 3 0 1 0 2 2V1Z"/></svg><img class="cover-image" alt="" hidden></button>
+    <button type="button" class="music-meta" aria-label="Open music player and queue"><div class="music-source">LOCAL AUDIO · OPEN PLAYER</div><div class="music-title" id="music-title">Your soundtrack</div><div class="music-artist" id="music-artist">Add audio from your files</div></button>
     <button id="music-add" aria-label="Add songs">+</button>
     <div class="music-controls">
       <button id="music-prev" aria-label="Previous track"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2v14H4zM20 5v14L7 12Z"/></svg></button><button id="music-play" aria-label="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v18l15-9Z"/></svg></button><button id="music-next" aria-label="Next track"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5h2v14h-2zM4 5v14l13-7Z"/></svg></button>
-    </div><audio id="music-audio"></audio>
+    </div><audio id="music-audio" preload="metadata"></audio>
+    <dialog class="music-sheet" aria-labelledby="player-heading">
+      <form method="dialog" class="player-header"><span id="player-heading">YOUR SOUNDTRACK</span><button aria-label="Close player">×</button></form>
+      <div class="player-cover"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v12a3 3 0 1 0 2 2V8l8-2v8a3 3 0 1 0 2 2V1Z"/></svg><img class="cover-image" alt="" hidden></div>
+      <h2 class="player-title">Your soundtrack</h2><p class="player-artist">Add audio from your files</p><p class="player-album"></p>
+      <label class="seek-label" for="music-seek">Track position</label><input id="music-seek" type="range" min="0" max="100" value="0" step="0.1" disabled><div class="player-times"><span class="elapsed">0:00</span><span class="duration">0:00</span></div>
+      <div class="player-controls"><button type="button" data-action="previous" aria-label="Previous track">↤</button><button type="button" data-action="play" aria-label="Play">Play</button><button type="button" data-action="next" aria-label="Next track">↦</button></div>
+      <div class="queue-heading"><h3>Up next</h3><button type="button" data-action="add">Add songs</button></div><ol class="music-queue"></ol><p class="player-help">Choose audio files you own. Embedded album artwork appears automatically. Apple Music subscription downloads cannot play here.</p>
+    </dialog>
   </div>
 </template>
 <template id="tpl-notes">
   <div class="widget widget-notes">
-    <div class="notes-header"><div class="notes-heading"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="6" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="4" cy="18" r="1.5"/><path d="M9 6h12M9 12h12M9 18h12"/></svg><strong>Focus list</strong></div><span class="notes-count" aria-label="Remaining items">0</span><button id="notes-add" aria-label="Add item" aria-expanded="false">+</button></div>
+    <div class="notes-header"><div class="notes-heading"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="6" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="4" cy="18" r="1.5"/><path d="M9 6h12M9 12h12M9 18h12"/></svg><strong>Focus</strong></div><span class="notes-count" aria-label="Remaining items">0 left</span><button id="notes-add" aria-label="Add item" aria-expanded="false">+</button></div>
+    <div class="focus-progress" role="progressbar" aria-label="Focus items completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
     <form class="notes-entry" hidden><input aria-label="New focus item" placeholder="One thing to focus on…" maxlength="200" required autocomplete="off"><button type="submit">Add</button></form>
-    <p class="notes-empty"><strong>A little room for what matters.</strong>Tap + to add your first reminder.</p>
+    <p class="notes-empty"><strong>Make room for what matters.</strong>Add one small thing to focus on.</p>
     <ul class="notes-list" id="notes-list"></ul>
+    <div class="focus-footer"><span class="focus-status" aria-live="polite">A fresh start</span><button type="button" class="focus-clear" hidden>Clear completed</button></div>
   </div>
 </template>
-<script src="js/storage.js"></script><script src="js/widgets/clock.js"></script><script src="js/widgets/music.js"></script><script src="js/widgets/notes.js"></script><script src="js/core.js"></script>
+<script src="js/storage.js"></script><script src="js/world-data.js"></script><script src="js/widgets/clock.js"></script><script src="js/vendor/jsmediatags.min.js"></script><script src="js/widgets/music.js"></script><script src="js/widgets/notes.js"></script><script src="js/core.js"></script>
 </body></html>
