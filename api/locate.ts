@@ -1,6 +1,19 @@
 // Vercel equivalent of the Netlify location edge function. The platform adds
 // these approximate IP-geolocation headers to function requests.
-function decodeHeader(value: string | null): string | null {
+type HeaderValue = string | string[] | undefined;
+
+interface VercelRequest {
+  headers: Record<string, HeaderValue>;
+}
+
+interface VercelResponse {
+  setHeader(name: string, value: string): void;
+  status(code: number): VercelResponse;
+  json(body: unknown): void;
+}
+
+function decodeHeader(value: HeaderValue): string | null {
+  if (Array.isArray(value)) value = value[0];
   if (!value) return null;
   try {
     return decodeURIComponent(value.replace(/\+/g, "%20"));
@@ -9,7 +22,8 @@ function decodeHeader(value: string | null): string | null {
   }
 }
 
-function displayRegion(countryCode: string | null, regionCode: string | null): string | null {
+function displayRegion(countryCode: string | null, regionCode: HeaderValue): string | null {
+  if (Array.isArray(regionCode)) regionCode = regionCode[0];
   if (!regionCode) return null;
   if (!countryCode) return regionCode;
 
@@ -21,25 +35,26 @@ function displayRegion(countryCode: string | null, regionCode: string | null): s
   }
 }
 
-export default function handler(request: Request): Response {
+export default function handler(request: VercelRequest, response: VercelResponse): void {
   const headers = request.headers;
-  const countryCode = headers.get("x-vercel-ip-country");
-  const regionCode = headers.get("x-vercel-ip-country-region");
+  const countryCode = headers["x-vercel-ip-country"] as string | null | undefined;
+  const regionCode = headers["x-vercel-ip-country-region"];
   const country = countryCode
     ? new Intl.DisplayNames(["en"], { type: "region" }).of(countryCode) || countryCode
     : null;
-  const latitude = Number(headers.get("x-vercel-ip-latitude"));
-  const longitude = Number(headers.get("x-vercel-ip-longitude"));
+  const latitude = Number(headers["x-vercel-ip-latitude"]);
+  const longitude = Number(headers["x-vercel-ip-longitude"]);
 
-  return Response.json({
-    city: decodeHeader(headers.get("x-vercel-ip-city")),
+  const body = {
+    city: decodeHeader(headers["x-vercel-ip-city"]),
     region: displayRegion(countryCode, regionCode),
     country,
     countryCode,
     latitude: Number.isFinite(latitude) ? latitude : null,
     longitude: Number.isFinite(longitude) ? longitude : null,
-    timezone: headers.get("x-vercel-ip-timezone"),
-  }, {
-    headers: { "cache-control": "private, no-store" },
-  });
+    timezone: headers["x-vercel-ip-timezone"] || null,
+  };
+
+  response.setHeader("Cache-Control", "private, no-store");
+  response.status(200).json(body);
 }
