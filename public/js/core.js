@@ -1,5 +1,6 @@
 // Local widget shell: no remote layout library is required to render the app.
-const WIDGETS = [ClockWidget, MusicWidget, NotesWidget];
+// Music remains in the project for later, but is temporarily hidden from the dashboard.
+const WIDGETS = [ClockWidget, NotesWidget];
 
 function buildGrid() {
   const grid = document.getElementById("grid");
@@ -27,8 +28,24 @@ function keepScreenAwake() {
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") request(); });
 }
 
+function enterFullscreen() {
+  const root = document.documentElement;
+  if (document.fullscreenElement || !root.requestFullscreen) return;
+  root.requestFullscreen().catch(() => {});
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   buildGrid();
   registerServiceWorker();
   keepScreenAwake();
+
+  // Browsers only allow fullscreen from a user gesture. Request it on the
+  // first tap/click or keyboard activation anywhere in the app.
+  const requestOnEntry = () => {
+    enterFullscreen();
+    document.removeEventListener("pointerdown", requestOnEntry);
+    document.removeEventListener("keydown", requestOnEntry);
+  };
+  document.addEventListener("pointerdown", requestOnEntry, { once: true });
+  document.addEventListener("keydown", requestOnEntry, { once: true });
 });
