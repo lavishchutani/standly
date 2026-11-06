@@ -5,6 +5,8 @@ const NotesWidget = {
     const entry = el.querySelector('.notes-entry');
     const input = entry.querySelector('input');
     const add = el.querySelector('#notes-add');
+    const tasksToggle = el.querySelector('.tasks-toggle');
+    const tasksPanel = el.querySelector('.tasks-panel');
     const saved = Storage.get('notes.items', []);
     let items = Array.isArray(saved) ? saved.filter(i => i && typeof i.text === 'string') : [];
     const render = () => {
@@ -37,6 +39,12 @@ const NotesWidget = {
       }
     };
     const save = () => { Storage.set('notes.items', items); render(); };
+    tasksToggle.onclick = () => {
+      const open = !el.classList.contains('tasks-open');
+      el.classList.toggle('tasks-open', open);
+      tasksToggle.setAttribute('aria-expanded', String(open));
+      tasksPanel.inert = !open;
+    };
     el.querySelector('.focus-clear').onclick = () => { items = items.filter(i => !i.done); save(); add.focus(); };
     add.onclick = () => { entry.hidden = !entry.hidden; add.setAttribute('aria-expanded', String(!entry.hidden)); if (!entry.hidden) input.focus(); };
     entry.onsubmit = e => {

@@ -98,12 +98,18 @@
 </template>
 <template id="tpl-notes">
   <div class="widget widget-notes">
-    <div class="notes-header"><div class="notes-heading"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="6" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="4" cy="18" r="1.5"/><path d="M9 6h12M9 12h12M9 18h12"/></svg><strong>Focus</strong></div><span class="notes-count" aria-label="Remaining items">0 left</span><button id="notes-add" aria-label="Add item" aria-expanded="false">+</button></div>
-    <div class="focus-progress" role="progressbar" aria-label="Focus items completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
-    <form class="notes-entry" hidden><input aria-label="New focus item" placeholder="One thing to focus on…" maxlength="200" required autocomplete="off"><button type="submit">Add</button></form>
-    <p class="notes-empty"><strong>Make room for what matters.</strong>Add one small thing to focus on.</p>
-    <ul class="notes-list" id="notes-list"></ul>
-    <div class="focus-footer"><span class="focus-status" aria-live="polite">A fresh start</span><button type="button" class="focus-clear" hidden>Clear completed</button></div>
+    <button type="button" class="tasks-toggle" aria-expanded="false" aria-controls="tasks-panel">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h2.5M9 6.5h11M4 12h2.5M9 12h11M4 17.5h2.5M9 17.5h11"/><path d="m4.2 6.5.8.8 1.5-1.7m-2.3 6.4.8.8 1.5-1.7m-2.3 6.4.8.8 1.5-1.7"/></svg>
+      <span>Tasks</span><span class="notes-count" aria-label="Remaining tasks">0 left</span><i aria-hidden="true"></i>
+    </button>
+    <div class="tasks-panel" id="tasks-panel" inert>
+      <div class="notes-header"><div class="notes-heading"><strong>Your list</strong></div><button id="notes-add" aria-label="Add task" aria-expanded="false">+</button></div>
+      <div class="focus-progress" role="progressbar" aria-label="Tasks completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <form class="notes-entry" hidden><input aria-label="New task" placeholder="Add a task…" maxlength="200" required autocomplete="off"><button type="submit">Add</button></form>
+      <p class="notes-empty"><strong>Make room for what matters.</strong>Add one small thing to your list.</p>
+      <ul class="notes-list" id="notes-list"></ul>
+      <div class="focus-footer"><span class="focus-status" aria-live="polite">A fresh start</span><button type="button" class="focus-clear" hidden>Clear completed</button></div>
+    </div>
   </div>
 </template>
 <script src="js/storage.js"></script><script src="js/world-data.js"></script><script src="js/widgets/clock.js"></script><script src="js/widgets/notes.js"></script><script src="js/core.js"></script>

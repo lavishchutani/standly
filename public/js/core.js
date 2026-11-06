@@ -41,11 +41,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Browsers only allow fullscreen from a user gesture. Request it on the
   // first tap/click or keyboard activation anywhere in the app.
+  let enteredAt = 0;
   const requestOnEntry = () => {
+    enteredAt = performance.now();
+    document.body.classList.add("clock-focus-mode");
     enterFullscreen();
     document.removeEventListener("pointerdown", requestOnEntry);
     document.removeEventListener("keydown", requestOnEntry);
   };
   document.addEventListener("pointerdown", requestOnEntry, { once: true });
   document.addEventListener("keydown", requestOnEntry, { once: true });
+
+  const leaveFocusMode = () => {
+    document.body.classList.remove("clock-focus-mode");
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  };
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.body.classList.contains("clock-focus-mode")) leaveFocusMode();
+  });
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && document.body.classList.contains("clock-focus-mode")) leaveFocusMode();
+  });
+  document.querySelector("#grid").addEventListener("click", (event) => {
+    if (!document.body.classList.contains("clock-focus-mode") || performance.now() - enteredAt < 500) return;
+    if (event.target.closest(".clock-time, .analog-face, .world-time")) leaveFocusMode();
+  });
 });

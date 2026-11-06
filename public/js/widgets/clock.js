@@ -136,10 +136,15 @@ const ClockWidget = {
 
     const saveFormat = () => { Storage.set("clockFormat", fmt); syncControls(); render(); };
     const selectFace = (style) => {
+      if (appearance.style === style) return;
+      el.classList.add("face-changing");
       appearance.style = style;
-      applyAppearance();
-      Storage.set("clockAppearance", appearance);
-      render();
+      window.setTimeout(() => {
+        applyAppearance();
+        Storage.set("clockAppearance", appearance);
+        render();
+        requestAnimationFrame(() => el.classList.remove("face-changing"));
+      }, 110);
     };
 
     applyAppearance();

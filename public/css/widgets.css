@@ -39,6 +39,25 @@
 .world-locate{min-width:44px;min-height:44px}.world-now{flex:1;overflow:hidden}.world-meta{white-space:normal;line-height:1.4}.world-time{font-size:min(76px,calc(45cqw * var(--clock-scale,.86) / (var(--chars,5) * var(--wf,.56))))}
 @media(prefers-reduced-motion:reduce){.map-dots circle,.face-indicator button:after{transition:none}}
 
+/* Compact Tasks launcher that expands into a glassy, animated list panel. */
+.standly-card[data-widget=notes]{position:fixed;z-index:20;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:min(350px,calc(100vw - 32px));height:58px;min-height:0;border-radius:20px!important;background:transparent!important;overflow:hidden;transition:height .42s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.widget-notes{height:100%;padding:0;border:1px solid #ffffff16;border-radius:20px;background:linear-gradient(145deg,#ffffff14,#ffffff06 55%,#ffffff0b);box-shadow:0 12px 42px #0008,inset 0 1px 0 #ffffff20;backdrop-filter:blur(24px) saturate(1.3);-webkit-backdrop-filter:blur(24px) saturate(1.3);overflow:hidden}
+.tasks-toggle{width:100%;height:56px;min-height:56px;display:flex;align-items:center;gap:11px;padding:0 14px;border:0;background:transparent;text-align:left;color:#f4f4f6}
+.tasks-toggle>svg{width:21px;height:21px;fill:none;stroke:#eab36b;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px #eab36b55)}
+.tasks-toggle>span:first-of-type{font-size:14px;font-weight:620;letter-spacing:-.02em}
+.tasks-toggle .notes-count{margin-left:auto;margin-right:0;font-size:10px;color:#b7b7c0;background:#ffffff0c}
+.tasks-toggle>i{width:8px;height:8px;border-right:1.5px solid #aaaab2;border-bottom:1.5px solid #aaaab2;transform:rotate(45deg) translateY(-2px);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.tasks-open .tasks-toggle>i{transform:rotate(225deg) translate(-2px,-1px)}
+.tasks-panel{display:flex;flex-direction:column;min-height:0;max-height:0;padding:0 16px;opacity:0;transform:translateY(10px);overflow:hidden;transition:max-height .42s cubic-bezier(.2,.8,.2,1),padding .35s,opacity .25s,transform .35s}
+.tasks-open{height:min(420px,68dvh)!important;box-shadow:0 20px 70px #000b,inset 0 1px 0 #ffffff20!important}
+.tasks-open .tasks-panel{height:calc(100% - 56px);max-height:calc(68dvh - 56px);padding:0 16px 12px;opacity:1;transform:translateY(0);overflow:auto}
+.tasks-panel .notes-header{min-height:34px}.tasks-panel .notes-heading strong{font-size:12px;font-weight:550;color:#a4a4ac}
+.tasks-panel .focus-progress{margin-top:3px}.tasks-panel .notes-empty{flex:1;min-height:70px}
+.tasks-panel .notes-list{min-height:0;flex:1;overscroll-behavior:contain}
+.tasks-panel .focus-footer{min-height:28px}
+.clock-focus-mode .standly-card[data-widget=notes]{display:none}
+@media(prefers-reduced-motion:reduce){.standly-card[data-widget=notes],.tasks-toggle>i,.tasks-panel{transition:none}}
+
 /* A single location signal keeps the map quiet and readable. */
 .map-core{fill:#ff998b;stroke:#171214;stroke-width:4}.map-ring{stroke:#ff998b;opacity:.8}.map-pulse{fill:#ff998b}.map-dots .here,.map-dots .here.night{fill:#ff998b}
 .notes-heading strong{font-size:17px;letter-spacing:-.035em}.notes-count{font-size:11px;font-weight:600;color:#b3b3bc;background:#242428;padding:5px 9px;border-radius:20px;margin-right:4px;white-space:nowrap}.focus-progress{height:2px;flex:none;background:#2a2825;border-radius:2px;margin:5px 0 2px;overflow:hidden}.focus-progress span{display:block;height:100%;background:#eab36b}.notes-list li{border-bottom-color:#ffffff09}.notes-list .check{min-width:44px;width:44px}.notes-list .check:before{left:12px}.notes-list .done .check:after{content:'✓';position:absolute;left:15px;top:14px;font-size:12px;color:#17120c}.notes-list .done .check:before{box-shadow:none}.focus-footer{display:flex;align-items:center;justify-content:space-between;gap:6px;flex:none;min-height:25px;color:#777780;font-size:10px}.focus-clear{font-size:10px;border:0;background:none;color:#eab36b;padding:0 4px;min-height:30px}.focus-clear[hidden]{display:none}.notes-empty{margin:6px 0;flex:1}.notes-empty[hidden]{display:none}.notes-entry{margin-bottom:4px}.notes-list:empty{display:none}
